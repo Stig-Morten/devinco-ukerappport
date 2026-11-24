@@ -1,0 +1,839 @@
+<!doctype html>
+<html>
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover">
+<title>Ukerapport uke 47 – Devinco Services</title>
+<meta name="claude:viewport-fit-sides" content="cover">
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=DM+Sans:wght@400;500;600;700&family=DM+Mono:wght@400;500&display=swap">
+<style>
+:root {
+  --bg: #f6f5f2;
+  --surface: #ffffff;
+  --fg: #1a1917;
+  --fg-2: #5c5a54;
+  --fg-3: #8a877e;
+  --border: #e8e6e0;
+  --accent: #2a6cb5;
+  --accent-light: #e8f0fa;
+  --won: #1a7f37;
+  --won-bg: #e6f4ea;
+  --lost: #cf222e;
+  --lost-bg: #ffebe9;
+  --sent: #0969da;
+  --sent-bg: #ddf0ff;
+  --no: #6e7781;
+  --no-bg: #f0efec;
+  --none: #9a6700;
+  --none-bg: #fff8e1;
+}
+@media (prefers-color-scheme: dark) {
+  :root:not([data-theme="light"]) {
+    color-scheme: dark;
+    --bg: #141413;
+    --surface: #1e1e1c;
+    --fg: #eceae4;
+    --fg-2: #b0ada5;
+    --fg-3: #7a776f;
+    --border: #2e2d2a;
+    --accent: #5a9de0;
+    --accent-light: #1c2d42;
+    --won: #3fb950;
+    --won-bg: #162a1c;
+    --lost: #f85149;
+    --lost-bg: #3d1518;
+    --sent: #58a6ff;
+    --sent-bg: #152540;
+    --no: #8b949e;
+    --no-bg: #262624;
+    --none: #d29922;
+    --none-bg: #2e2510;
+  }
+}
+body {
+  background: var(--bg);
+  color: var(--fg);
+  font-family: 'DM Sans', system-ui, sans-serif;
+  margin: 0;
+  padding-left: max(16px, env(safe-area-inset-left, 0px));
+  padding-right: max(16px, env(safe-area-inset-right, 0px));
+  padding-block: 0;
+  -webkit-font-smoothing: antialiased;
+}
+* { box-sizing: border-box; margin: 0; }
+.container { max-width: 960px; margin: 0 auto; }
+.header {
+  padding: 32px 0 24px;
+  display: flex;
+  justify-content: space-between;
+  align-items: flex-end;
+  flex-wrap: wrap;
+  gap: 8px 24px;
+}
+.header .week-label {
+  font-family: 'DM Mono', monospace;
+  font-size: 12px;
+  font-weight: 500;
+  letter-spacing: 0.08em;
+  text-transform: uppercase;
+  color: var(--accent);
+  margin-bottom: 4px;
+}
+.header h1 {
+  font-size: 26px;
+  font-weight: 700;
+  line-height: 1.2;
+  text-wrap: balance;
+}
+.header .period {
+  font-size: 13px;
+  color: var(--fg-2);
+  margin-top: 4px;
+}
+.header-right {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+}
+.live-badge {
+  display: inline-flex;
+  align-items: center;
+  gap: 5px;
+  font-size: 11px;
+  font-weight: 500;
+  color: var(--won);
+  background: var(--won-bg);
+  padding: 4px 10px;
+  border-radius: 20px;
+}
+.live-badge::before {
+  content: '';
+  width: 6px;
+  height: 6px;
+  border-radius: 50%;
+  background: var(--won);
+}
+.section { margin-bottom: 16px; }
+.section-head {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: 12px 0 8px;
+  border-bottom: 2px solid var(--border);
+  margin-bottom: 12px;
+  cursor: pointer;
+  -webkit-tap-highlight-color: transparent;
+  user-select: none;
+}
+.section-head h2 {
+  font-size: 15px;
+  font-weight: 600;
+  display: flex;
+  align-items: center;
+  gap: 8px;
+}
+.section-head .toggle {
+  width: 24px; height: 24px;
+  display: flex; align-items: center; justify-content: center;
+  border-radius: 6px; color: var(--fg-3);
+  transition: transform 0.2s ease, background 0.15s;
+  flex-shrink: 0;
+}
+.section-head .toggle svg { width: 16px; height: 16px; }
+.section-head:active .toggle { background: var(--border); }
+.section[open] .toggle { transform: rotate(90deg); }
+.section-body { display: none; }
+.section[open] .section-body { display: block; }
+.count {
+  font-family: 'DM Mono', monospace;
+  font-size: 11px;
+  font-weight: 500;
+  color: var(--fg-3);
+  background: var(--border);
+  padding: 2px 7px;
+  border-radius: 10px;
+}
+.card {
+  background: var(--surface);
+  border: 1px solid var(--border);
+  border-radius: 10px;
+  overflow: hidden;
+}
+.card-head {
+  padding: 10px 14px 8px;
+  font-size: 12px;
+  font-weight: 600;
+  color: var(--fg-2);
+  letter-spacing: 0.02em;
+  text-transform: uppercase;
+  border-bottom: 1px solid var(--border);
+}
+.full-width { margin-bottom: 12px; }
+.data-table {
+  width: 100%;
+  border-collapse: collapse;
+  font-size: 13px;
+}
+.data-table thead th {
+  padding: 8px 12px;
+  text-align: left;
+  font-size: 11px;
+  font-weight: 600;
+  color: var(--fg-3);
+  text-transform: uppercase;
+  letter-spacing: 0.03em;
+  border-bottom: 1px solid var(--border);
+  white-space: nowrap;
+}
+.data-table thead th.align-right { text-align: right; }
+.data-table tbody tr { border-bottom: 1px solid var(--border); }
+.data-table tbody tr:last-child { border-bottom: none; }
+.data-table tbody td {
+  padding: 10px 12px;
+  vertical-align: top;
+  line-height: 1.4;
+}
+.data-table tbody td.mono {
+  font-family: 'DM Mono', monospace;
+  font-variant-numeric: tabular-nums;
+}
+.data-table tbody td.align-right { text-align: right; }
+.data-table tbody td.date-col {
+  white-space: nowrap;
+  color: var(--fg-2);
+  font-size: 12px;
+}
+.data-table tbody td.muted {
+  color: var(--fg-3);
+  font-size: 12px;
+}
+.data-table tbody td.name-col { font-weight: 500; }
+.data-table tfoot td {
+  padding: 10px 12px;
+  font-weight: 600;
+  border-top: 2px solid var(--border);
+}
+.data-table tfoot td.align-right {
+  text-align: right;
+  font-family: 'DM Mono', monospace;
+  font-variant-numeric: tabular-nums;
+}
+.sum-row {
+  display: flex;
+  justify-content: space-between;
+  padding: 10px 14px;
+  font-size: 13px;
+  border-bottom: 1px solid var(--border);
+}
+.sum-row:last-child { border-bottom: none; }
+.sum-row .sum-label { color: var(--fg-2); }
+.sum-row .sum-val {
+  font-family: 'DM Mono', monospace;
+  font-weight: 500;
+  font-variant-numeric: tabular-nums;
+}
+.sum-row.total { font-weight: 600; }
+.sum-row.total .sum-label { color: var(--fg); }
+.grid-2 {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 12px;
+  margin-bottom: 16px;
+}
+.footer {
+  margin: 28px 0 40px;
+  padding-top: 16px;
+  border-top: 1px solid var(--border);
+  display: flex;
+  justify-content: space-between;
+  flex-wrap: wrap;
+  gap: 4px 24px;
+}
+.footer p {
+  font-size: 11px;
+  color: var(--fg-3);
+  line-height: 1.5;
+}
+.footer .brand { font-weight: 600; color: var(--fg-2); }
+.assumptions {
+  font-size: 12px;
+  color: var(--fg-2);
+  line-height: 1.6;
+  padding: 14px;
+}
+.amt {
+  font-family: 'DM Mono', monospace;
+  font-variant-numeric: tabular-nums;
+}
+.num {
+  font-family: 'DM Mono', monospace;
+  font-variant-numeric: tabular-nums;
+  text-align: right;
+}
+@media (max-width: 700px) {
+  .grid-2 { grid-template-columns: 1fr; }
+  .header { flex-direction: column; align-items: flex-start; }
+  .data-table { font-size: 12px; }
+  .data-table thead th, .data-table tbody td { padding: 8px 8px; }
+  .hide-mobile { display: none; }
+}
+</style>
+</head>
+<body>
+<div class="container">
+
+<div class="header">
+  <div class="header-left">
+    <div class="week-label">Uke 47 · 2026</div>
+    <h1>Ukerapport – Devinco Services</h1>
+    <div class="period">Mandag 16.11 – søndag 22.11.2026 · Data hentet 23.11.2026</div>
+  </div>
+  <div class="header-right">
+    <div class="live-badge">Data fra Zoho CRM</div>
+  </div>
+</div>
+
+<!-- NYE SALG DENNE UKEN -->
+<div class="section" open>
+<div class="section-head" onclick="toggleSection(this)">
+  <h2>Nye salg denne uken <span class="count">8 salg · 73 974 kr</span></h2>
+  <div class="toggle"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round"><path d="M9 6l6 6-6 6"/></svg></div>
+</div>
+<div class="section-body">
+
+<div class="card full-width">
+  <div class="card-head">Salg vunnet uke 47 (closing-dato 16.11–22.11)</div>
+  <div style="overflow-x: auto;">
+  <table class="data-table">
+    <thead>
+      <tr>
+        <th>Dato</th>
+        <th>Kunde</th>
+        <th>Deal</th>
+        <th class="align-right">Beløp</th>
+        <th>Selger</th>
+        <th class="hide-mobile">Møtebooker</th>
+      </tr>
+    </thead>
+    <tbody>
+      <tr>
+        <td class="date-col">16.11</td>
+        <td>Frøyland Elektro AS</td>
+        <td class="name-col">Servicepakken</td>
+        <td class="mono align-right">11 880 kr</td>
+        <td>Henning Andreassen</td>
+        <td class="muted hide-mobile">Annen</td>
+      </tr>
+      <tr>
+        <td class="date-col">17.11</td>
+        <td>MG Elektro AS</td>
+        <td class="name-col">40-timers HMS-kurs</td>
+        <td class="mono align-right">5 933 kr</td>
+        <td>Kursportalen</td>
+        <td class="muted hide-mobile">–</td>
+      </tr>
+      <tr>
+        <td class="date-col">18.11</td>
+        <td>Elektroservice Kristiansund AS</td>
+        <td class="name-col">Miljøfyrtårn</td>
+        <td class="mono align-right">17 520 kr</td>
+        <td>Erling Lundemoen</td>
+        <td class="muted hide-mobile">Annen</td>
+      </tr>
+      <tr>
+        <td class="date-col">18.11</td>
+        <td>Ventec AS</td>
+        <td class="name-col">40-timers HMS-kurs</td>
+        <td class="mono align-right">11 867 kr</td>
+        <td>Kursportalen</td>
+        <td class="muted hide-mobile">–</td>
+      </tr>
+      <tr>
+        <td class="date-col">19.11</td>
+        <td>Volt Elektro Narvik AS</td>
+        <td class="name-col">40-timers HMS-kurs</td>
+        <td class="mono align-right">5 933 kr</td>
+        <td>Kursportalen</td>
+        <td class="muted hide-mobile">–</td>
+      </tr>
+      <tr>
+        <td class="date-col">19.11</td>
+        <td>Fire Eater AS</td>
+        <td class="name-col">Konsulenttime</td>
+        <td class="mono align-right">1 640 kr</td>
+        <td>Ruben Jokiel</td>
+        <td class="muted hide-mobile">Annen</td>
+      </tr>
+      <tr>
+        <td class="date-col">19.11</td>
+        <td>Con-Wood-Steel AS</td>
+        <td class="name-col">Sentral Godkjenning 2026</td>
+        <td class="mono align-right">5 500 kr</td>
+        <td>Erling Kjelby</td>
+        <td class="muted hide-mobile">Annen</td>
+      </tr>
+      <tr>
+        <td class="date-col">20.11</td>
+        <td>Steam Clean Buskerud AS</td>
+        <td class="name-col">Årlig revisjon</td>
+        <td class="mono align-right">13 700 kr</td>
+        <td>Stig Bredvei</td>
+        <td class="muted hide-mobile">Annen</td>
+      </tr>
+    </tbody>
+    <tfoot>
+      <tr>
+        <td colspan="3">Sum 8 salg</td>
+        <td class="align-right">73 974 kr</td>
+        <td colspan="2"></td>
+      </tr>
+    </tfoot>
+  </table>
+  </div>
+</div>
+
+<div class="grid-2">
+  <div class="card">
+    <div class="card-head">Salg hittil i november</div>
+    <div class="sum-row"><span class="sum-label">Antall salg</span><span class="sum-val">19</span></div>
+    <div class="sum-row total"><span class="sum-label">Sum</span><span class="sum-val">196 737 kr</span></div>
+  </div>
+  <div class="card">
+    <div class="card-head">Salg hittil i 2026</div>
+    <div class="sum-row"><span class="sum-label">Antall salg</span><span class="sum-val">285</span></div>
+    <div class="sum-row total"><span class="sum-label">Sum</span><span class="sum-val">2 245 452 kr</span></div>
+  </div>
+</div>
+
+</div>
+</div>
+
+<!-- NYE TILBUD DENNE UKEN -->
+<div class="section" open>
+<div class="section-head" onclick="toggleSection(this)">
+  <h2>Nye tilbud denne uken <span class="count">6 tilbud · 108 360 kr</span></h2>
+  <div class="toggle"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round"><path d="M9 6l6 6-6 6"/></svg></div>
+</div>
+<div class="section-body">
+
+<div class="card full-width">
+  <div class="card-head">Tilbud opprettet uke 47 (ekskl. vunnet og kurs)</div>
+  <div style="overflow-x: auto;">
+  <table class="data-table">
+    <thead>
+      <tr>
+        <th>Dato</th>
+        <th>Kunde</th>
+        <th>Deal</th>
+        <th class="align-right">Beløp</th>
+        <th>Selger</th>
+        <th class="hide-mobile">Møtebooker</th>
+      </tr>
+    </thead>
+    <tbody>
+      <tr>
+        <td class="date-col">16.11</td>
+        <td>Askel Installasjon AS</td>
+        <td class="name-col">Miljøfyrtårn Pluss</td>
+        <td class="mono align-right">17 520 kr</td>
+        <td>Ruben Jokiel</td>
+        <td class="muted hide-mobile">Annen</td>
+      </tr>
+      <tr>
+        <td class="date-col">18.11</td>
+        <td>Øvreberg Installasjonsforretning AS</td>
+        <td class="name-col">Servicepakken</td>
+        <td class="mono align-right">19 800 kr</td>
+        <td>Stig Bredvei</td>
+        <td class="muted hide-mobile">Erling Lundemoen</td>
+      </tr>
+      <tr>
+        <td class="date-col">18.11</td>
+        <td>Øvreberg Installasjonsforretning AS</td>
+        <td class="name-col">Miljøfyrtårn</td>
+        <td class="mono align-right">17 520 kr</td>
+        <td>Stig Bredvei</td>
+        <td class="muted hide-mobile">Erling Lundemoen</td>
+      </tr>
+      <tr>
+        <td class="date-col">19.11</td>
+        <td>Kaffebryggeriet AS</td>
+        <td class="name-col">Servicepakken</td>
+        <td class="mono align-right">22 200 kr</td>
+        <td>Jan-Inge</td>
+        <td class="muted hide-mobile">Erling Lundemoen</td>
+      </tr>
+      <tr>
+        <td class="date-col">19.11</td>
+        <td>Kaffebryggeriet AS</td>
+        <td class="name-col">Miljøfyrtårn</td>
+        <td class="mono align-right">17 520 kr</td>
+        <td>Stig Bredvei</td>
+        <td class="muted hide-mobile">Erling Lundemoen</td>
+      </tr>
+      <tr>
+        <td class="date-col">20.11</td>
+        <td>Hønefoss Glass-Service AS</td>
+        <td class="name-col">Servicepakken</td>
+        <td class="mono align-right">13 800 kr</td>
+        <td>Erling Kjelby</td>
+        <td class="muted hide-mobile">Annen</td>
+      </tr>
+    </tbody>
+    <tfoot>
+      <tr>
+        <td colspan="3">Sum 6 tilbud</td>
+        <td class="align-right">108 360 kr</td>
+        <td colspan="2"></td>
+      </tr>
+    </tfoot>
+  </table>
+  </div>
+</div>
+
+<div class="grid-2">
+  <div class="card">
+    <div class="card-head">Tilbud hittil i november</div>
+    <div class="sum-row"><span class="sum-label">Antall tilbud</span><span class="sum-val">11</span></div>
+    <div class="sum-row total"><span class="sum-label">Sum</span><span class="sum-val">213 360 kr</span></div>
+  </div>
+  <div class="card">
+    <div class="card-head">Tilbud hittil i 2026</div>
+    <div class="sum-row"><span class="sum-label">Antall tilbud</span><span class="sum-val">89</span></div>
+    <div class="sum-row total"><span class="sum-label">Sum</span><span class="sum-val">1 254 496 kr</span></div>
+  </div>
+</div>
+
+</div>
+</div>
+
+<!-- Åpne tilbud for oppfølging -->
+<div class="section" open>
+<div class="section-head" onclick="toggleSection(this)">
+  <h2>Tilbud – til oppfølging <span class="count">5 tilbud · 97 486 kr</span></h2>
+  <div class="toggle"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round"><path d="M9 6l6 6-6 6"/></svg></div>
+</div>
+<div class="section-body">
+
+<div class="grid-2">
+  <div class="card">
+    <div class="card-head">Forfalt closing date</div>
+    <div class="sum-row"><span class="sum-label">Antall tilbud</span><span class="sum-val">2</span></div>
+    <div class="sum-row total"><span class="sum-label">Sum</span><span class="sum-val" style="color:var(--lost)">36 886 kr</span></div>
+  </div>
+  <div class="card">
+    <div class="card-head">Forfaller neste 16 dager</div>
+    <div class="sum-row"><span class="sum-label">Antall tilbud</span><span class="sum-val">3</span></div>
+    <div class="sum-row total"><span class="sum-label">Sum</span><span class="sum-val">60 600 kr</span></div>
+  </div>
+</div>
+
+<div class="card full-width">
+  <div class="card-head">Stage «Tilbud sendt» i pipeline Salg – forfalt eller forfaller innen 16 dager (ekskl. opprettet denne uken og Erling Lundemoen som selger)</div>
+  <div style="overflow-x: auto;">
+  <table class="data-table">
+    <thead>
+      <tr>
+        <th>Opprettet</th>
+        <th>Kunde</th>
+        <th>Deal</th>
+        <th class="align-right">Beløp</th>
+        <th>Closing</th>
+        <th>Selger</th>
+        <th class="hide-mobile">Møtebooker</th>
+      </tr>
+    </thead>
+    <tbody>
+      <tr>
+        <td class="date-col">29.06</td>
+        <td>Bjørnar Lind AS</td>
+        <td class="name-col">Miljøsertifisering</td>
+        <td class="mono align-right">19 990 kr</td>
+        <td class="date-col" style="color:var(--lost)">30.10.26</td>
+        <td>Lillian Landaas</td>
+        <td class="muted hide-mobile">Annen</td>
+      </tr>
+      <tr>
+        <td class="date-col">06.10</td>
+        <td>Malermester Sture Brækstad AS</td>
+        <td class="name-col">HG Servicepakken</td>
+        <td class="mono align-right">16 896 kr</td>
+        <td class="date-col" style="color:var(--lost)">30.10.26</td>
+        <td>Ruben Jokiel</td>
+        <td class="muted hide-mobile">Annen</td>
+      </tr>
+      <tr>
+        <td class="date-col">03.11</td>
+        <td>Orkland Industriservice AS</td>
+        <td class="name-col">Servicepakken</td>
+        <td class="mono align-right">22 200 kr</td>
+        <td class="date-col">30.11.26</td>
+        <td>Erling Kjelby</td>
+        <td class="muted hide-mobile">Erling Lundemoen</td>
+      </tr>
+      <tr>
+        <td class="date-col">04.11</td>
+        <td>Buskerud Blikk &amp; Montasje AS</td>
+        <td class="name-col">Servicepakken</td>
+        <td class="mono align-right">24 600 kr</td>
+        <td class="date-col">30.11.26</td>
+        <td>Erling Kjelby</td>
+        <td class="muted hide-mobile">Annen</td>
+      </tr>
+      <tr>
+        <td class="date-col">04.11</td>
+        <td>Buskerud Blikk &amp; Sveis AS</td>
+        <td class="name-col">Servicepakken</td>
+        <td class="mono align-right">13 800 kr</td>
+        <td class="date-col">30.11.26</td>
+        <td>Erling Kjelby</td>
+        <td class="muted hide-mobile">Annen</td>
+      </tr>
+    </tbody>
+    <tfoot>
+      <tr>
+        <td colspan="3">Sum 5 tilbud</td>
+        <td class="align-right">97 486 kr</td>
+        <td colspan="3"></td>
+      </tr>
+    </tfoot>
+  </table>
+  </div>
+</div>
+
+</div>
+</div>
+
+<!-- Leveranser -->
+<div class="section" open>
+<div class="section-head" onclick="toggleSection(this)">
+  <h2>Leveranser <span class="count">18 leveranser &middot; 259 923 kr</span></h2>
+  <div class="toggle"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round"><path d="M9 6l6 6-6 6"/></svg></div>
+</div>
+<div class="section-body">
+  <div class="grid-2">
+    <div class="card">
+      <div class="card-head">Denne uken</div>
+      <div class="sum-row"><span class="sum-label">Antall leveranser</span><span class="sum-val">18</span></div>
+      <div class="sum-row total"><span class="sum-label">Sum</span><span class="sum-val">259 923 kr</span></div>
+    </div>
+    <div class="card">
+      <div class="card-head">Hittil i november</div>
+      <div class="sum-row"><span class="sum-label">Antall leveranser</span><span class="sum-val">49</span></div>
+      <div class="sum-row total"><span class="sum-label">Sum</span><span class="sum-val">681 025 kr</span></div>
+    </div>
+  </div>
+  <div class="card full-width">
+    <div class="card-head">Leveranser uke 47 (levert dato i uken)</div>
+    <div style="overflow-x: auto;">
+    <table class="data-table">
+      <thead>
+        <tr><th>Kunde</th><th>Deal</th><th class="num">Beløp</th><th>Konsulent</th></tr>
+      </thead>
+      <tbody>
+        <tr><td>Fasade og Sikkerhet AS</td><td>Årlig revisjon - med SP avtale</td><td class="num">12 480&nbsp;kr</td><td>Jokiel</td></tr>
+        <tr><td>Glassmester Erling Eriksen AS</td><td>Årlig revisjon - med SP avtale</td><td class="num">16 260&nbsp;kr</td><td>Jokiel</td></tr>
+        <tr><td>Askel Installasjon AS</td><td>Årlig revisjon - med SP avtale</td><td class="num">16 260&nbsp;kr</td><td>Jokiel</td></tr>
+        <tr><td>O. Løkken A/S</td><td>Årlig revisjon - med SP avtale</td><td class="num">18 780&nbsp;kr</td><td>Landaas</td></tr>
+        <tr><td>Haugesund Blikk AS</td><td>Årlig revisjon - med SP avtale</td><td class="num">18 780&nbsp;kr</td><td>Jokiel</td></tr>
+        <tr><td>Fjøssystemer Midt Norge AS</td><td>Årlig revisjon - med SP avtale</td><td class="num">21 300&nbsp;kr</td><td>Jokiel</td></tr>
+        <tr><td>Knem og Næsvik AS</td><td>Årlig revisjon - med SP avtale</td><td class="num">21 300&nbsp;kr</td><td>Landaas</td></tr>
+        <tr><td>MG ELEKTRO AS</td><td>40-timers HMS-kurs</td><td class="num">5 933&nbsp;kr</td><td>–</td></tr>
+        <tr><td>Nordhordland Elektro AS</td><td>Årlig revisjon - med SP avtale</td><td class="num">16 260&nbsp;kr</td><td>Jokiel</td></tr>
+        <tr><td>Murmester Dag Arne Nilsen AS</td><td>Årlig revisjon - med SP avtale</td><td class="num">31 929&nbsp;kr</td><td>Landaas</td></tr>
+        <tr><td>CG Glass &amp; Fasade AS</td><td>Konsulent timer: Sjekklister</td><td class="num">3 280&nbsp;kr</td><td>Jokiel</td></tr>
+        <tr><td>Ventec AS</td><td>40-timers HMS-kurs</td><td class="num">11 867&nbsp;kr</td><td>–</td></tr>
+        <tr><td>VOLT ELEKTRO NARVIK AS</td><td>40-timers HMS-kurs</td><td class="num">5 933&nbsp;kr</td><td>–</td></tr>
+        <tr><td>Fire Eater AS</td><td>Konsulenttime</td><td class="num">1 640&nbsp;kr</td><td>Jokiel</td></tr>
+        <tr><td>Con-Wood-Steel AS</td><td>Sentral Godkjenning 2026</td><td class="num">5 500&nbsp;kr</td><td>–</td></tr>
+        <tr><td>Hønefoss Glass-Service AS</td><td>Riis - Opplæring Modul 3</td><td class="num">19 900&nbsp;kr</td><td>Kjelby</td></tr>
+        <tr><td>Malerbua AS</td><td>Årlig revisjon - med SP avtale</td><td class="num">16 260&nbsp;kr</td><td>Landaas</td></tr>
+        <tr><td>Mur og Puss AS</td><td>Årlig revisjon - med SP avtale</td><td class="num">16 260&nbsp;kr</td><td>Landaas</td></tr>
+      </tbody>
+      <tfoot>
+        <tr><td colspan="2"><strong>Sum</strong></td><td class="num"><strong>259 923 kr</strong></td><td></td></tr>
+      </tfoot>
+    </table>
+    </div>
+  </div>
+</div>
+</div>
+
+<!-- Arbeidsmøter -->
+<div class="section" open>
+<div class="section-head" onclick="toggleSection(this)">
+  <h2>Arbeidsmøter <span class="count">18 utførte</span></h2>
+  <div class="toggle"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round"><path d="M9 6l6 6-6 6"/></svg></div>
+</div>
+<div class="section-body">
+  <div class="grid-2">
+    <div class="card">
+      <div class="card-head">Utførte denne uken</div>
+      <div class="sum-row"><span class="sum-label">Lillian</span><span class="sum-val">11</span></div>
+      <div class="sum-row"><span class="sum-label">Ruben</span><span class="sum-val">7</span></div>
+      <div class="sum-row"><span class="sum-label">Erling</span><span class="sum-val">0</span></div>
+      <div class="sum-row total"><span class="sum-label">Totalt</span><span class="sum-val">18</span></div>
+    </div>
+  </div>
+  <div class="card full-width">
+    <div class="card-head">Arbeidsmøter med status «Utført» i uke 47</div>
+    <div style="overflow-x: auto;">
+    <table class="data-table">
+      <thead>
+        <tr><th>Kunde</th><th>Dato</th><th>Type</th><th>Eier</th></tr>
+      </thead>
+      <tbody>
+        <tr><td>O. Løkken A/S</td><td class="date-col">16.11</td><td>Revisjon</td><td>Lillian Landaas</td></tr>
+        <tr><td>Fasade og Sikkerhet AS</td><td class="date-col">16.11</td><td>Revisjon</td><td>Ruben Jokiel</td></tr>
+        <tr><td>Malco AS</td><td class="date-col">16.11</td><td>Arbeidsmøte</td><td>Lillian Landaas</td></tr>
+        <tr><td>Askel Installasjon AS</td><td class="date-col">16.11</td><td>Revisjon</td><td>Ruben Jokiel</td></tr>
+        <tr><td>Knem og Næsvik AS</td><td class="date-col">17.11</td><td>Revisjon</td><td>Lillian Landaas</td></tr>
+        <tr><td>Fjøssystemer Midt Norge AS</td><td class="date-col">17.11</td><td>Revisjon</td><td>Ruben Jokiel</td></tr>
+        <tr><td>Elektro Nettverk Service AS</td><td class="date-col">17.11</td><td>Arbeidsmøte</td><td>Ruben Jokiel</td></tr>
+        <tr><td>Østa Elektro AS</td><td class="date-col">17.11</td><td>Arbeidsmøte</td><td>Ruben Jokiel</td></tr>
+        <tr><td>Kåre Christensen AS</td><td class="date-col">18.11</td><td>Arbeidsmøte</td><td>Ruben Jokiel</td></tr>
+        <tr><td>VOLT ELEKTRO NARVIK AS</td><td class="date-col">18.11</td><td>Arbeidsmøte</td><td>Lillian Landaas</td></tr>
+        <tr><td>Murmester Dag Arne Nilsen AS</td><td class="date-col">18.11</td><td>Revisjon</td><td>Lillian Landaas</td></tr>
+        <tr><td>Glassmester Reidar Hesler AS</td><td class="date-col">18.11</td><td>Arbeidsmøte</td><td>Lillian Landaas</td></tr>
+        <tr><td>Tømrar Sigbjørn Strand AS</td><td class="date-col">19.11</td><td>Arbeidsmøte</td><td>Lillian Landaas</td></tr>
+        <tr><td>Blikkhuset Hallingdal AS</td><td class="date-col">19.11</td><td>Arbeidsmøte</td><td>Lillian Landaas</td></tr>
+        <tr><td>Hofstad VVS AS</td><td class="date-col">19.11</td><td>Onboardingsmøte</td><td>Ruben Jokiel</td></tr>
+        <tr><td>Mælen Blikk og Ventilasjon AS</td><td class="date-col">20.11</td><td>Arbeidsmøte</td><td>Lillian Landaas</td></tr>
+        <tr><td>Malerbua AS</td><td class="date-col">20.11</td><td>Revisjon</td><td>Lillian Landaas</td></tr>
+        <tr><td>Mur og Puss AS</td><td class="date-col">20.11</td><td>Revisjon</td><td>Lillian Landaas</td></tr>
+      </tbody>
+    </table>
+    </div>
+  </div>
+</div>
+</div>
+
+<!-- Miljøfyrtårn - nye og pågående -->
+<div class="section" open>
+<div class="section-head" onclick="toggleSection(this)">
+  <h2>Miljøfyrtårn – nye og pågående <span class="count">14 deals · 251&thinsp;960 kr</span></h2>
+  <div class="toggle"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round"><path d="M9 6l6 6-6 6"/></svg></div>
+</div>
+<div class="section-body">
+  <div class="grid-2">
+    <div class="card">
+      <div class="card-head">Fordeling per stage</div>
+      <div class="sum-row"><span class="sum-label">Klar for leveranse (4)</span><span class="sum-val">70&thinsp;080 kr</span></div>
+      <div class="sum-row"><span class="sum-label">I arbeid (1)</span><span class="sum-val">15&thinsp;990 kr</span></div>
+      <div class="sum-row"><span class="sum-label">Fakturert (9)</span><span class="sum-val">165&thinsp;890 kr</span></div>
+      <div class="sum-row total"><span class="sum-label">Totalt (14)</span><span class="sum-val">251&thinsp;960 kr</span></div>
+    </div>
+  </div>
+  <div class="card full-width">
+    <div class="card-head">Deals med prosjekttype Miljøfyrtårn i pipeline Leveranse (ekskl. Levert)</div>
+    <div style="overflow-x: auto;">
+    <table class="data-table">
+      <thead>
+        <tr><th>Vunnet</th><th>Kunde</th><th>Beløp</th><th>Stage</th><th>Konsulent</th></tr>
+      </thead>
+      <tbody>
+        <tr><td class="date-col" style="color:var(--lost)">18.11.26</td><td>Elektroservice Kristiansund AS</td><td class="amt">17&thinsp;520</td><td>Klar for leveranse</td><td>Lillian Landaas</td></tr>
+        <tr><td class="date-col" style="color:var(--lost)">06.11.26</td><td>Intratech AS</td><td class="amt">17&thinsp;520</td><td>Klar for leveranse</td><td>Lillian Landaas</td></tr>
+        <tr><td class="date-col" style="color:var(--lost)">30.10.26</td><td>Energikontroll AS</td><td class="amt">17&thinsp;520</td><td>Klar for leveranse</td><td>Ruben Jokiel</td></tr>
+        <tr><td class="date-col" style="color:var(--lost)">21.10.26</td><td>Mathisen Elektro AS</td><td class="amt">17&thinsp;520</td><td>Klar for leveranse</td><td>Ruben Jokiel</td></tr>
+        <tr><td class="date-col" style="color:var(--lost)">31.08.26</td><td>Inn AS</td><td class="amt">19&thinsp;990</td><td>Fakturert</td><td>Erling Kjelby</td></tr>
+        <tr><td class="date-col" style="color:var(--lost)">26.08.26</td><td>Polar Kuldeservice AS</td><td class="amt">17&thinsp;520</td><td>Fakturert</td><td>Erling Kjelby</td></tr>
+        <tr><td class="date-col" style="color:var(--lost)">25.08.26</td><td>Multi Renhold Norge AS</td><td class="amt">15&thinsp;000</td><td>Fakturert</td><td>Erling Kjelby</td></tr>
+        <tr><td class="date-col" style="color:var(--lost)">12.08.26</td><td>Skina AS</td><td class="amt">19&thinsp;990</td><td>Fakturert</td><td>Erling Kjelby</td></tr>
+        <tr><td class="date-col" style="color:var(--lost)">30.06.26</td><td>IHP AS</td><td class="amt">17&thinsp;520</td><td>Fakturert</td><td>Erling Kjelby</td></tr>
+        <tr><td class="date-col" style="color:var(--lost)">30.06.26</td><td>Malermester Jan Larsen AS</td><td class="amt">15&thinsp;990</td><td>Fakturert</td><td>Erling Kjelby</td></tr>
+        <tr><td class="date-col" style="color:var(--lost)">23.06.26</td><td>MINDE SNEKKERI AS</td><td class="amt">15&thinsp;990</td><td>I arbeid</td><td>Erling Kjelby</td></tr>
+        <tr><td class="date-col" style="color:var(--lost)">27.04.26</td><td>KM Ventilasjon AS</td><td class="amt">19&thinsp;990</td><td>Fakturert</td><td>Erling Kjelby</td></tr>
+        <tr><td class="date-col" style="color:var(--lost)">29.10.25</td><td>Denko AS</td><td class="amt">19&thinsp;900</td><td>Fakturert</td><td>Erling Kjelby</td></tr>
+        <tr><td class="date-col" style="color:var(--lost)">30.09.25</td><td>Drengenes Tak og Blikk AS</td><td class="amt">19&thinsp;990</td><td>Fakturert</td><td>Erling Kjelby</td></tr>
+      </tbody>
+    </table>
+    </div>
+  </div>
+</div>
+</div>
+
+<!-- Kundeundersøkelser -->
+<div class="section">
+<div class="section-head" onclick="toggleSection(this)">
+  <h2>Kundeundersøkelser <span class="count">6 besvart</span></h2>
+  <div class="toggle"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round"><path d="M9 6l6 6-6 6"/></svg></div>
+</div>
+<div class="section-body">
+  <div class="card full-width">
+    <div class="card-head">Besvarte undersøkelser uke 47</div>
+    <div style="overflow-x: auto;">
+    <table class="data-table">
+      <thead>
+        <tr><th>Besvart</th><th>Kunde</th><th>Rådgiver</th><th>Møtet</th><th>Nytte</th><th>Tjenesten</th><th>Systemet</th></tr>
+      </thead>
+      <tbody>
+        <tr><td class="date-col">20.11</td><td>Malerbua AS</td><td>Lillian</td><td class="amt">5</td><td class="amt">5</td><td style="font-size:.82em;max-width:220px">Vi er ganske ferske og holder på å bli bedre, fikk veldig god hjelp og samarbeid</td><td style="font-size:.82em;max-width:220px">Holder på å bli bedre kjent, har dessverre ikke vært helt på, men vi blir bedre</td></tr>
+        <tr><td class="date-col">19.11</td><td>Blikkhuset Hallingdal AS</td><td>Lillian</td><td class="amt">5</td><td class="amt">5</td><td style="font-size:.82em;max-width:220px">Veldig glad for Lillian som veileder. Betyr mye å ha en sparringspartner</td><td style="font-size:.82em;max-width:220px">Mye å sette seg inn i, ikke alt like logisk. Litt frustrerende med endringer</td></tr>
+        <tr><td class="date-col">18.11</td><td>Murmester Dag Arne Nilsen AS</td><td>Lillian</td><td class="amt">5</td><td class="amt">5</td><td style="font-size:.82em">–</td><td style="font-size:.82em">–</td></tr>
+        <tr><td class="date-col">18.11</td><td>Glassmester Reidar Hesler AS</td><td>Lillian</td><td class="amt">5</td><td class="amt">5</td><td style="font-size:.82em;max-width:220px">Bra oppfølging fra rådgiver. Burde vært mulighet for AI i systemet</td><td style="font-size:.82em;max-width:220px">Burde vært mulighet for AI – medlemmer i kjeden synes systemet er tungvint og komplisert</td></tr>
+        <tr><td class="date-col">18.11</td><td>HG Elektro AS</td><td>Ruben</td><td class="amt">4</td><td class="amt">4</td><td style="font-size:.82em;max-width:220px">Bedre framgang med arbeidet, godt forklart. Personen kom med gode forslag</td><td style="font-size:.82em;max-width:220px">Kjempe bra med nye lista. Må bli koblet med Speedy og Contracting</td></tr>
+        <tr><td class="date-col">17.11</td><td>Elektro Nettverk Service AS</td><td>Ruben</td><td class="amt">5</td><td class="amt">4</td><td style="font-size:.82em;max-width:220px">Godt samarbeid, flott rådgivning</td><td style="font-size:.82em;max-width:220px">Ser ok ut, vi må jobbe litt mer med innholdet</td></tr>
+      </tbody>
+    </table>
+    </div>
+  </div>
+  <div class="card full-width">
+    <div class="card-head">Snittscorer – Tilfredshet med møtet og Nytte av møtene</div>
+    <table class="data-table">
+      <thead>
+        <tr><th>Periode</th><th>Svar</th><th>Møtet (snitt)</th><th>Nytte (snitt)</th></tr>
+      </thead>
+      <tbody>
+        <tr><td>Uke 47</td><td class="amt">6</td><td class="amt">4,83</td><td class="amt">4,67</td></tr>
+        <tr><td>November</td><td class="amt">22</td><td class="amt">4,82</td><td class="amt">4,77</td></tr>
+        <tr><td>Totalt</td><td class="amt">27</td><td class="amt">4,78</td><td class="amt">4,78</td></tr>
+      </tbody>
+    </table>
+  </div>
+</div>
+</div>
+
+<!-- Forutsetninger og forbehold -->
+<div class="section">
+<div class="section-head" onclick="toggleSection(this)">
+  <h2>Forutsetninger og forbehold</h2>
+  <div class="toggle"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round"><path d="M9 6l6 6-6 6"/></svg></div>
+</div>
+<div class="section-body">
+<div class="card full-width">
+  <div class="assumptions">
+    <p>Rapporten dekker uke 47 (man 16.11 – søn 22.11.2026). Data hentet fra Zoho CRM 23.11.2026 – aktivitet etter henting er ikke med.</p>
+    <p style="margin-top:6px">«Nye salg» bruker Closing Date og vunnet-stager (Vunnet, Venter på konsulent, Klar for leveranse, Dato avtalt, I arbeid, Levert, Fakturert, Betalt kurs, Gratis kurs). Closing Date er ikke nødvendigvis faktisk vunnet-tidspunkt.</p>
+    <p style="margin-top:6px">«Nye tilbud» bruker opprettelsesdato (Created Time) og ekskluderer vunnede stager og Betalt kurs/Gratis kurs. Deals med stage Tapt er inkludert (opprettet og tapt i samme uke).</p>
+    <p style="margin-top:6px">«Tilbud sendt – til oppfølging» viser deals med stage «Tilbud sendt» i pipeline Salg der closing date er forfalt eller forfaller innen 16 dager. Ekskludert: deals opprettet denne uken, og deals der Erling Lundemoen står i feltet Selger. Closing dates før i dag vises i rødt. Sortert etter Closing Date (nærmeste først).</p>
+    <p style="margin-top:6px">«Arbeidsmøter» viser poster i modulen Arbeidsmøter der Dato for arbeidsmøtet er i uke 47 og status er «Utført». 3 møter med status «Ikke møtt» er utelatt. Typenavnene er forkortet (uten «Servicepakken»). Eier er Arbeidsmøte Owner fra Zoho CRM.</p>
+    <p style="margin-top:6px">«Leveranser» viser deals der feltet Levert Dato er i uke 47. Utførende konsulent hentes fra feltet Utf_rende_konsulent i Zoho CRM – vises som «–» der feltet er tomt (typisk kursdealer og sentral godkjenning). «Hittil i november» dekker 01.11–23.11.</p>
+    <p style="margin-top:6px">«Hittil i november» dekker 01.11–23.11. «Hittil i 2026» dekker 01.01–23.11. For salg: deals opprettet før 2026 med closing i 2026 er inkludert.
+    <p style="margin-top:6px">Beløp er avrundet til hele kroner i tabellen. Møtebooker vises som «–» der feltet er tomt i Zoho.</p>
+    <p style="margin-top:6px">«Miljøfyrtårn – nye og pågående» viser deals i pipeline Leveranse med prosjekttype Miljøfyrtårn, ekskludert stagen Levert. Fakturert er inkludert (9 deals). Sortert etter Closing Date (nyeste først). Utførende konsulent er fra feltet Utførende konsulent i Zoho CRM. Alle closing dates er forfalt og vises i rødt. Data hentet via Zoho CRM Search API (COQL returnerte ikke Miljøfyrtårn-deals med Fakturert-stage pga. indekserings­begrensning).</p>
+    <p style="margin-top:6px">«Kundeundersøkelser» viser kun besvarte undersøkelser der Besvart dato er i uke 47. 6 av 17 sendte undersøkelser ble besvart. Én undersøkelse (HG Elektro AS) har møtedato 05.11 men ble besvart 18.11 og er derfor inkludert. Kommentarer er forkortet for lesbarhet. Snittscorer beregnes kun på poster med avgitt score. «Totalt» inkluderer alle besvarte undersøkelser i CRM (27 stk. per 23.11).</p>
+  </div>
+</div>
+</div>
+</div>
+
+<script>
+function toggleSection(head) {
+  const section = head.closest('.section');
+  if (section.hasAttribute('open')) {
+    section.removeAttribute('open');
+  } else {
+    section.setAttribute('open', '');
+  }
+}
+</script>
+
+<div class="footer">
+  <p class="brand">Devinco Services AS</p>
+  <p>Ukerapport uke 47 · Data fra Zoho CRM · 23.11.2026</p>
+</div>
+
+</div>
+</body>
+</html>
